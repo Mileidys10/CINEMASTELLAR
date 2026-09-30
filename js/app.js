@@ -149,6 +149,8 @@
       renderSeatMap();
     } else if (viewId === 'view-snacks') {
       renderSnacksView();
+    } else if (viewId === 'view-checkout') {
+      renderCheckoutView();
     } else if (viewId === 'view-ticket') {
       renderTicketView();
     } else if (viewId === 'view-history') {
@@ -702,7 +704,7 @@
   // =========================================================================
   // 8. TICKET DIGITAL CON CÓDIGO QR Y CANVAS HTML5
   // =========================================================================
-  function completeBookingAndGenerateTicket() {
+  function completeBookingAndGenerateTicket(paymentInfo = null) {
     if (!state.selectedMovie || state.selectedSeats.length === 0) {
       showToast('Por favor selecciona al menos una butaca.', 'warning');
       navigateTo('view-seats');
@@ -748,7 +750,19 @@
       seatsTotal,
       snacks: snacksList,
       snacksTotal,
-      grandTotal: seatsTotal + snacksTotal
+      grandTotal: seatsTotal + snacksTotal,
+      payment: paymentInfo || {
+        paymentMethod: 'Tarjeta de Crédito Visa •••• 4532',
+        authCode: 'AUTH-' + Math.floor(100000 + Math.random() * 900000),
+        pointsEarned: 65
+      },
+      buyer: state.currentUser ? {
+        name: state.currentUser.name,
+        email: state.currentUser.email
+      } : {
+        name: 'Invitado CinemaStellar',
+        email: 'invitado@cinemastellar.co'
+      }
     };
 
     state.currentBooking = bookingRecord;
@@ -1029,6 +1043,7 @@
   // 11. INICIALIZACIÓN GENERAL (DOM Ready)
   // =========================================================================
   function init() {
+    loadPersistedUser();
     initRouter();
     setupFilterBar();
     setupContactForm();
@@ -1082,10 +1097,468 @@
     }
   }
 
+
+  // =========================================================================
+  // 7.5. SISTEMA DE AUTENTICACION Y CONTROL DE USUARIOS (STELLAR CLUB)
+  // =========================================================================
+  function loadPersistedUser() {
+    try {
+      const stored = localStorage.getItem('cinemastellar_current_user');
+      if (stored) {
+        state.currentUser = JSON.parse(stored);
+      }
+    } catch (e) {
+      console.warn('Error al cargar usuario de localStorage:', e);
+    }
+    updateUserHeaderWidget();
+  }
+
+  function savePersistedUser(user) {
+    state.currentUser = user;
+    try {
+      if (user) {
+        localStorage.setItem('cinemastellar_current_user', JSON.stringify(user));
+      } else {
+        localStorage.removeItem('cinemastellar_current_user');
+      }
+    } catch (e) {
+      console.warn('Error al guardar usuario en localStorage:', e);
+    }
+    updateUserHeaderWidget();
+  }
+
+  function updateUserHeaderWidget() {
+    const authWidget = document.getElementById('auth-header-widget');
+    const userWidget = document.getElementById('user-header-widget');
+    if (!authWidget || !userWidget) return;
+
+    if (state.currentUser) {
+      authWidget.style.display = 'none';
+      userWidget.style.display = 'flex';
+
+      const nameElem = document.getElementById('user-display-name');
+      const pointsElem = document.getElementById('user-points-badge');
+      const initialsElem = document.getElementById('user-avatar-initials');
+      const emailElem = document.getElementById('dropdown-user-email');
+
+      if (nameElem) nameElem.innerText = state.currentUser.name;
+      if (pointsElem) pointsElem.innerText = `⭐ ${state.currentUser.points || 450} pts`;
+      if (emailElem) emailElem.innerText = state.currentUser.email;
+
+      if (initialsElem) {
+        const parts = state.currentUser.name.trim().split(' ');
+        const initials = parts.length > 1 
+          ? (parts[0][0] + parts[1][0]).toUpperCase()
+          : parts[0].slice(0, 2).toUpperCase();
+        initialsElem.innerText = initials;
+      }
+    } else {
+      authWidget.style.display = 'flex';
+      userWidget.style.display = 'none';
+      const dropdown = document.getElementById('user-dropdown-menu');
+      if (dropdown) dropdown.classList.remove('active');
+    }
+  }
+
+  function toggleUserDropdown(forceState) {
+    const dropdown = document.getElementById('user-dropdown-menu');
+    if (!dropdown) return;
+    if (typeof forceState === 'boolean') {
+      if (forceState) dropdown.classList.add('active');
+      else dropdown.classList.remove('active');
+    } else {
+      dropdown.classList.toggle('active');
+    }
+  }
+
+  function openAuthModal(initialTab = 'login', callbackAfterAuth = null) {
+    state.pendingAuthAction = callbackAfterAuth;
+    const modal = document.getElementById('auth-modal');
+    if (!modal) return;
+
+    switchAuthTab(initialTab);
+    modal.classList.add('active');
+  }
+
+  function closeAuthModal() {
+    const modal = document.getElementById('auth-modal');
+    if (modal) modal.classList.remove('active');
+    state.pendingAuthAction = null;
+  }
+
+  function switchAuthTab(tab) {
+    const btnLogin = document.getElementById('btn-tab-login');
+    const btnReg = document.getElementById('btn-tab-register');
+    const formLogin = document.getElementById('form-auth-login');
+    const formReg = document.getElementById('form-auth-register');
+
+    if (tab === 'register') {
+      if (btnLogin) btnLogin.classList.remove('active');
+      if (btnReg) btnReg.classList.add('active');
+      if (formLogin) formLogin.classList.remove('active');
+      if (formReg) formReg.classList.add('active');
+    } else {
+      if (btnLogin) btnLogin.classList.add('active');
+      if (btnReg) btnReg.classList.remove('active');
+      if (formLogin) formLogin.classList.add('active');
+      if (formReg) formReg.classList.remove('active');
+    }
+  }
+
+  function submitLogin() {
+    const email = document.getElementById('input-login-email').value.trim();
+    if (!email) {
+      showToast('Por favor ingresa tu correo electrónico.', 'warning');
+      return;
+    }
+
+    const user = {
+      name: email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+      email: email,
+      points: 480,
+      memberSince: '2026'
+    };
+
+    savePersistedUser(user);
+    closeAuthModal();
+    showToast(`¡Bienvenido de nuevo, ${user.name}! Sesión iniciada.`, 'success');
+
+    if (typeof state.pendingAuthAction === 'function') {
+      const cb = state.pendingAuthAction;
+      state.pendingAuthAction = null;
+      cb();
+    }
+  }
+
+  function loginDemoUser() {
+    const demoUser = {
+      name: 'Mileidys Agamez',
+      email: 'mileidys@cinemastellar.co',
+      points: 520,
+      memberSince: '2026'
+    };
+    savePersistedUser(demoUser);
+    closeAuthModal();
+    showToast(`Sesión demo iniciada como ${demoUser.name} ⭐`, 'success');
+
+    if (typeof state.pendingAuthAction === 'function') {
+      const cb = state.pendingAuthAction;
+      state.pendingAuthAction = null;
+      cb();
+    }
+  }
+
+  function submitRegister() {
+    const name = document.getElementById('input-reg-name').value.trim();
+    const email = document.getElementById('input-reg-email').value.trim();
+
+    if (!name || !email) {
+      showToast('Por favor completa los campos obligatorios.', 'warning');
+      return;
+    }
+
+    const newUser = {
+      name: name,
+      email: email,
+      points: 100, // Bono de bienvenida
+      memberSince: '2026'
+    };
+
+    savePersistedUser(newUser);
+    closeAuthModal();
+    showToast(`¡Cuenta creada con éxito! Ganaste 100 puntos de bienvenida ⭐`, 'success');
+
+    if (typeof state.pendingAuthAction === 'function') {
+      const cb = state.pendingAuthAction;
+      state.pendingAuthAction = null;
+      cb();
+    }
+  }
+
+  function logoutUser() {
+    savePersistedUser(null);
+    showToast('Has cerrado sesión correctamente.', 'info');
+    navigateTo('view-billboard');
+  }
+
+  // =========================================================================
+  // 7.6. PASARELA DE PAGO INTERACTIVA (CHECKOUT FLOW & PAYMENT GATEWAY)
+  // =========================================================================
+  function proceedToCheckout() {
+    if (!state.selectedMovie || state.selectedSeats.length === 0) {
+      showToast('Por favor selecciona al menos una butaca para continuar.', 'warning');
+      navigateTo('view-seats');
+      return;
+    }
+
+    // AUTH GUARD: Es obligatorio contar con una cuenta para pagar y emitir entradas
+    if (!state.currentUser) {
+      showToast('Para continuar al pago y vincular tus boletos con código QR, ingresa a tu cuenta.', 'info');
+      openAuthModal('login', () => {
+        navigateTo('view-checkout');
+      });
+      return;
+    }
+
+    navigateTo('view-checkout');
+  }
+
+  function switchPaymentMethod(method) {
+    state.activePaymentMethod = method;
+
+    const tabCard = document.getElementById('tab-pay-card');
+    const tabPse = document.getElementById('tab-pay-pse');
+    const tabWallet = document.getElementById('tab-pay-wallet');
+
+    const panelCard = document.getElementById('pay-panel-card');
+    const panelPse = document.getElementById('pay-panel-pse');
+    const panelWallet = document.getElementById('pay-panel-wallet');
+
+    [tabCard, tabPse, tabWallet].forEach(t => t && t.classList.remove('active'));
+    [panelCard, panelPse, panelWallet].forEach(p => p && p.classList.remove('active'));
+
+    if (method === 'pse') {
+      if (tabPse) tabPse.classList.add('active');
+      if (panelPse) panelPse.classList.add('active');
+    } else if (method === 'wallet') {
+      if (tabWallet) tabWallet.classList.add('active');
+      if (panelWallet) panelWallet.classList.add('active');
+    } else {
+      if (tabCard) tabCard.classList.add('active');
+      if (panelCard) panelCard.classList.add('active');
+    }
+  }
+
+  function renderCheckoutView() {
+    if (!state.selectedMovie || state.selectedSeats.length === 0) {
+      navigateTo('view-seats');
+      return;
+    }
+
+    // 1. Datos de película
+    const poster = document.getElementById('checkout-movie-poster');
+    const title = document.getElementById('checkout-movie-title');
+    const format = document.getElementById('checkout-movie-format');
+    const room = document.getElementById('checkout-movie-room');
+    const sched = document.getElementById('checkout-movie-schedule');
+
+    if (poster) poster.src = state.selectedMovie.poster;
+    if (title) title.innerText = state.selectedMovie.title;
+    if (format) format.innerText = state.selectedFormat || 'IMAX 3D Laser';
+    if (room) room.innerText = 'Sala 01 IMAX';
+    if (sched) sched.innerText = `📅 Hoy • ${state.selectedShowtime || '7:30 PM'}`;
+
+    // 2. Lista de Butacas
+    const seatsList = document.getElementById('checkout-seats-list');
+    let seatsSubtotal = 0;
+    if (seatsList) {
+      seatsList.innerHTML = '';
+      state.selectedSeats.forEach(s => {
+        seatsSubtotal += s.price;
+        const row = document.createElement('div');
+        row.className = 'checkout-item-row';
+        row.innerHTML = `
+          <span>Butaca ${s.id} (${s.type.toUpperCase()})</span>
+          <span style="font-weight: 600;">$${s.price.toLocaleString('es-CO')}</span>
+        `;
+        seatsList.appendChild(row);
+      });
+    }
+
+    // 3. Lista de Confitería
+    const snacksListElem = document.getElementById('checkout-snacks-list');
+    let snacksSubtotal = 0;
+    const snacksArray = [];
+    if (snacksListElem) {
+      snacksListElem.innerHTML = '';
+      for (const [id, qty] of Object.entries(state.cartSnacks)) {
+        const snack = (window.CINEMA_SNACKS || []).find(s => s.id === id);
+        if (snack && qty > 0) {
+          const itemCost = snack.price * qty;
+          snacksSubtotal += itemCost;
+          snacksArray.push({ name: snack.name, qty, price: itemCost });
+
+          const row = document.createElement('div');
+          row.className = 'checkout-item-row';
+          row.innerHTML = `
+            <span>${snack.name} x${qty}</span>
+            <span style="font-weight: 600;">$${itemCost.toLocaleString('es-CO')}</span>
+          `;
+          snacksListElem.appendChild(row);
+        }
+      }
+
+      if (snacksArray.length === 0) {
+        snacksListElem.innerHTML = '<p style="color: var(--text-dim); font-size: 0.85rem;">Sin productos de confitería seleccionados.</p>';
+      }
+    }
+
+    // 4. Totales Financieros
+    const grandTotal = seatsSubtotal + snacksSubtotal;
+    const taxes = Math.round(grandTotal * 0.19);
+    const pointsToEarn = Math.max(15, Math.round(grandTotal / 1000));
+
+    const elemSubSeats = document.getElementById('checkout-subtotal-seats');
+    const elemSubSnacks = document.getElementById('checkout-subtotal-snacks');
+    const elemTaxes = document.getElementById('checkout-taxes-amount');
+    const elemGrand = document.getElementById('checkout-grand-total');
+    const elemPoints = document.getElementById('checkout-points-earned');
+
+    if (elemSubSeats) elemSubSeats.innerText = `$${seatsSubtotal.toLocaleString('es-CO')}`;
+    if (elemSubSnacks) elemSubSnacks.innerText = `$${snacksSubtotal.toLocaleString('es-CO')}`;
+    if (elemTaxes) elemTaxes.innerText = `$${taxes.toLocaleString('es-CO')}`;
+    if (elemGrand) elemGrand.innerText = `$${grandTotal.toLocaleString('es-CO')}`;
+    if (elemPoints) elemPoints.innerText = pointsToEarn;
+
+    // Actualizar montos en los botones de pago
+    document.querySelectorAll('.btn-pay-amount').forEach(btnSpan => {
+      btnSpan.innerText = `$${grandTotal.toLocaleString('es-CO')} COP`;
+    });
+
+    // 5. Datos de usuario comprador
+    const buyerName = document.getElementById('checkout-buyer-name');
+    const buyerEmail = document.getElementById('checkout-buyer-email');
+    if (state.currentUser) {
+      if (buyerName) buyerName.innerText = state.currentUser.name;
+      if (buyerEmail) buyerEmail.innerText = state.currentUser.email;
+
+      // Autocompletar tarjeta si coincide
+      const cardHolderInput = document.getElementById('input-card-holder');
+      if (cardHolderInput && !cardHolderInput.value) {
+        cardHolderInput.value = state.currentUser.name.toUpperCase();
+        const holderPreview = document.getElementById('card-holder-preview');
+        if (holderPreview) holderPreview.innerText = state.currentUser.name.toUpperCase();
+      }
+    }
+
+    setupCardSimulatorListeners();
+  }
+
+  function setupCardSimulatorListeners() {
+    const numInput = document.getElementById('input-card-number');
+    const holderInput = document.getElementById('input-card-holder');
+    const expiryInput = document.getElementById('input-card-expiry');
+
+    const numPreview = document.getElementById('card-number-preview');
+    const holderPreview = document.getElementById('card-holder-preview');
+    const expiryPreview = document.getElementById('card-expiry-preview');
+    const brandDisplay = document.getElementById('card-brand-display');
+    const brandBadge = document.getElementById('input-brand-badge');
+
+    if (numInput && !numInput._hasListener) {
+      numInput._hasListener = true;
+      numInput.addEventListener('input', (e) => {
+        let val = e.target.value.replace(/\D/g, '').slice(0, 16);
+        let formatted = '';
+        for (let i = 0; i < val.length; i++) {
+          if (i > 0 && i % 4 === 0) formatted += ' ';
+          formatted += val[i];
+        }
+        e.target.value = formatted;
+        if (numPreview) numPreview.innerText = formatted || '•••• •••• •••• ••••';
+
+        // Detección de marca
+        let brand = 'VISA';
+        let badge = '💳';
+        if (val.startsWith('5')) { brand = 'MASTERCARD'; badge = '🔴🟠'; }
+        else if (val.startsWith('3')) { brand = 'AMEX'; badge = '💳'; }
+        else if (val.startsWith('4')) { brand = 'VISA'; badge = '🔵'; }
+
+        if (brandDisplay) brandDisplay.innerHTML = `<span class="brand-text">${brand}</span>`;
+        if (brandBadge) brandBadge.innerText = badge;
+      });
+    }
+
+    if (holderInput && !holderInput._hasListener) {
+      holderInput._hasListener = true;
+      holderInput.addEventListener('input', (e) => {
+        const val = e.target.value.toUpperCase();
+        if (holderPreview) holderPreview.innerText = val || 'NOMBRE DEL TITULAR';
+      });
+    }
+
+    if (expiryInput && !expiryInput._hasListener) {
+      expiryInput._hasListener = true;
+      expiryInput.addEventListener('input', (e) => {
+        let val = e.target.value.replace(/\D/g, '').slice(0, 4);
+        if (val.length >= 2) {
+          val = val.slice(0, 2) + '/' + val.slice(2);
+        }
+        e.target.value = val;
+        if (expiryPreview) expiryPreview.innerText = val || 'MM/AA';
+      });
+    }
+  }
+
+  function processSecurePayment() {
+    const overlay = document.getElementById('payment-processing-overlay');
+    const title = document.getElementById('payment-loader-title');
+    const step = document.getElementById('payment-loader-step');
+    const bar = document.getElementById('payment-progress-fill');
+
+    if (!overlay) return;
+    overlay.classList.add('active');
+
+    if (bar) bar.style.width = '20%';
+    if (title) title.innerText = 'Conectando con la Red Bancaria...';
+    if (step) step.innerText = 'Cifrando credenciales con algoritmo AES-256...';
+
+    setTimeout(() => {
+      if (bar) bar.style.width = '60%';
+      if (title) title.innerText = 'Verificación 3D Secure...';
+      if (step) step.innerText = 'Validando fondos y confirmando tokenización de seguridad...';
+    }, 900);
+
+    setTimeout(() => {
+      if (bar) bar.style.width = '100%';
+      if (title) title.innerText = '¡Transacción Aprobada! 🎉';
+      if (step) step.innerText = 'Generando comprobante fiscal y código QR de acceso...';
+    }, 1800);
+
+    setTimeout(() => {
+      overlay.classList.remove('active');
+
+      let paymentDesc = 'Tarjeta de Crédito terminada en •••• 4532 (1 cuota)';
+      if (state.activePaymentMethod === 'pse') {
+        const bank = document.getElementById('select-pse-bank').value || 'Bancolombia';
+        paymentDesc = `PSE - Débito en Cuenta (${bank.toUpperCase()})`;
+      } else if (state.activePaymentMethod === 'wallet') {
+        paymentDesc = 'Billetera Móvil (Nequi / Daviplata)';
+      }
+
+      const authCode = 'AUTH-' + Math.floor(100000 + Math.random() * 900000);
+      const pointsEarned = Math.max(15, Math.round((state.selectedSeats.reduce((a,s)=>a+s.price,0)) / 1000));
+
+      if (state.currentUser) {
+        state.currentUser.points = (state.currentUser.points || 0) + pointsEarned;
+        savePersistedUser(state.currentUser);
+      }
+
+      completeBookingAndGenerateTicket({
+        paymentMethod: paymentDesc,
+        authCode: authCode,
+        pointsEarned: pointsEarned
+      });
+    }, 2500);
+  }
+
+
   // Exponer API pública en window para handlers inline y pruebas
   window.cinemaApp = {
     state,
     navigateTo,
+    openAuthModal,
+    closeAuthModal,
+    switchAuthTab,
+    submitLogin,
+    submitRegister,
+    loginDemoUser,
+    logoutUser,
+    toggleUserDropdown,
+    proceedToCheckout,
+    switchPaymentMethod,
+    renderCheckoutView,
+    processSecurePayment,
     openTrailerModal,
     closeTrailerModal,
     openMovieDetailsModal,

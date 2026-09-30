@@ -68,6 +68,7 @@ class TestMarkupAndSpaStructure(unittest.TestCase):
             "view-billboard",
             "view-seats",
             "view-snacks",
+            "view-checkout",
             "view-ticket",
             "view-history",
             "view-contact",
@@ -89,6 +90,8 @@ class TestMarkupAndSpaStructure(unittest.TestCase):
     def test_modals_present(self):
         self.assertIn('id="trailer-modal"', self.html)
         self.assertIn('id="movie-details-modal"', self.html)
+        self.assertIn('id="auth-modal"', self.html)
+        self.assertIn('id="payment-processing-overlay"', self.html)
 
     def test_scripts_included_properly(self):
         self.assertIn('src="js/movies_data.js"', self.html)
@@ -157,6 +160,10 @@ class TestJavaScriptDataAndEngine(unittest.TestCase):
             "drawFullTicketCanvas",
             "downloadTicketPNG",
             "cinemaApp",
+            "proceedToCheckout",
+            "processSecurePayment",
+            "openAuthModal",
+            "switchPaymentMethod",
         ]
         for sym in required_symbols:
             self.assertIn(sym, content, f"Falta el método o símbolo obligatorio en app.js: {sym}")
@@ -224,6 +231,43 @@ class TestGovernanceAndManifests(unittest.TestCase):
             data = json.load(f)
         self.assertEqual(data["name"], "cinemastellar")
         self.assertIn("Mileidys Agamez Ospino", data["author"])
+
+
+
+
+
+class TestAuthenticationAndPaymentGateway(unittest.TestCase):
+    """Verifica los requerimientos funcionales de autenticacion obligatoria y pasarela de pago."""
+
+    @classmethod
+    def setUpClass(cls):
+        with open(INDEX_PATH, "r", encoding="utf-8") as f:
+            cls.html = f.read()
+        with open(JS_APP_PATH, "r", encoding="utf-8") as f:
+            cls.js = f.read()
+
+    def test_auth_widgets_and_modal_structure(self):
+        self.assertIn('id="auth-header-widget"', self.html)
+        self.assertIn('id="user-header-widget"', self.html)
+        self.assertIn('id="auth-modal"', self.html)
+        self.assertIn('id="btn-tab-login"', self.html)
+        self.assertIn('id="btn-tab-register"', self.html)
+
+    def test_payment_gateway_components(self):
+        self.assertIn('id="view-checkout"', self.html)
+        self.assertIn('id="tab-pay-card"', self.html)
+        self.assertIn('id="tab-pay-pse"', self.html)
+        self.assertIn('id="tab-pay-wallet"', self.html)
+        self.assertIn('id="credit-card-preview"', self.html)
+        self.assertIn('id="btn-submit-card-pay"', self.html)
+        self.assertIn('id="payment-processing-overlay"', self.html)
+
+    def test_auth_guard_and_checkout_flow_in_js(self):
+        self.assertIn("proceedToCheckout", self.js)
+        self.assertIn("processSecurePayment", self.js)
+        self.assertIn("switchPaymentMethod", self.js)
+        self.assertIn("currentUser", self.js)
+        self.assertIn("cinemastellar_current_user", self.js)
 
 
 if __name__ == "__main__":

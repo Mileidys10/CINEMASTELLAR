@@ -39,10 +39,44 @@
         <a href="#view-contact" class="nav-link">Corporativo & Contacto</a>
       </nav>
 
-      <div class="header-actions">
-        <a href="#view-seats" class="stellar-btn btn-gold btn-sm">
-          Reservar Ahora
-        </a>
+            <div class="header-actions">
+        <!-- Widget cuando NO esta autenticado -->
+        <div id="auth-header-widget" class="auth-header-widget">
+          <button class="stellar-btn btn-secondary btn-sm" id="btn-open-login" onclick="window.cinemaApp.openAuthModal('login')">
+            Iniciar Sesión
+          </button>
+          <button class="stellar-btn btn-gold btn-sm" id="btn-open-register" onclick="window.cinemaApp.openAuthModal('register')">
+            Crear Cuenta
+          </button>
+        </div>
+
+        <!-- Widget cuando SI esta autenticado -->
+        <div id="user-header-widget" class="user-header-widget" style="display: none;">
+          <div class="user-avatar-badge" onclick="window.cinemaApp.toggleUserDropdown()">
+            <div class="avatar-ring">
+              <span id="user-avatar-initials">MA</span>
+            </div>
+            <div class="user-meta-info">
+              <span class="user-display-name" id="user-display-name">Mileidys Agamez</span>
+              <span class="user-points-badge" id="user-points-badge">⭐ 450 pts</span>
+            </div>
+            <span class="dropdown-chevron">▾</span>
+          </div>
+
+          <div class="user-dropdown-menu" id="user-dropdown-menu">
+            <div class="dropdown-header">
+              <strong id="dropdown-user-email">usuario@correo.com</strong>
+              <span class="membership-level">Socio VIP Stellar</span>
+            </div>
+            <a href="#view-history" class="dropdown-item" onclick="window.cinemaApp.navigateTo('view-history'); window.cinemaApp.toggleUserDropdown(false);">
+              🎟️ Mis Boletos Comprados
+            </a>
+            <div class="dropdown-divider"></div>
+            <button type="button" class="dropdown-item logout-btn" onclick="window.cinemaApp.logoutUser()">
+              🚪 Cerrar Sesión
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </header>
@@ -344,12 +378,12 @@
               <span id="snacks-grand-total" class="summary-total-amount">$0</span>
             </div>
 
-            <div class="snacks-actions-row">
-              <button id="btn-finish-booking" class="stellar-btn btn-gold btn-block">
-                Confirmar y Emitir Boleto
+                        <div class="snacks-actions-row">
+              <button id="btn-finish-booking" class="stellar-btn btn-gold btn-block" onclick="window.cinemaApp.proceedToCheckout()">
+                Proceder al Pago Seguro 💳
               </button>
-              <button id="btn-skip-snacks" class="stellar-btn btn-secondary btn-block">
-                Omitir Snacks y Continuar
+              <button id="btn-skip-snacks" class="stellar-btn btn-secondary btn-block" onclick="window.cinemaApp.proceedToCheckout()">
+                Omitir Snacks y Proceder al Pago
               </button>
             </div>
           </div>
@@ -358,6 +392,327 @@
 
     </div>
   </section>
+
+    <!-- =========================================================================
+       VISTA 3.5: PASARELA DE PAGO SEGURA (Checkout & Payment Gateway)
+       ========================================================================= -->
+  <section id="view-checkout" class="spa-view">
+    <div class="container">
+      <div class="view-header">
+        <a href="#view-snacks" class="back-link">← Volver a Confitería</a>
+        <h2 class="view-title">Pasarela de Pago Segura</h2>
+        <p class="view-subtitle">Transacciones cifradas de extremo a extremo con certificación bancaria PCI-DSS.</p>
+
+        <!-- Stepper -->
+        <div class="checkout-stepper">
+          <div class="step-node completed"><span class="step-idx">✓</span> Butacas</div>
+          <div class="step-connector completed"></div>
+          <div class="step-node completed"><span class="step-idx">✓</span> Confitería</div>
+          <div class="step-connector completed"></div>
+          <div class="step-node active"><span class="step-idx">3</span> Pago Seguro</div>
+          <div class="step-connector"></div>
+          <div class="step-node"><span class="step-idx">4</span> Ticket Digital</div>
+        </div>
+      </div>
+
+      <div class="checkout-layout-grid">
+        <!-- Columna Izquierda: Pasarela de Pago -->
+        <div class="checkout-payment-column">
+          <!-- Selector de Método de Pago -->
+          <div class="payment-methods-tabs">
+            <button type="button" class="pay-tab-btn active" id="tab-pay-card" onclick="window.cinemaApp.switchPaymentMethod('card')">
+              <span class="tab-icon">💳</span>
+              <span>Tarjeta Débito / Crédito</span>
+            </button>
+            <button type="button" class="pay-tab-btn" id="tab-pay-pse" onclick="window.cinemaApp.switchPaymentMethod('pse')">
+              <span class="tab-icon">🏦</span>
+              <span>PSE (Débito Bancario)</span>
+            </button>
+            <button type="button" class="pay-tab-btn" id="tab-pay-wallet" onclick="window.cinemaApp.switchPaymentMethod('wallet')">
+              <span class="tab-icon">📱</span>
+              <span>Nequi / Daviplata</span>
+            </button>
+          </div>
+
+          <!-- PANEL 1: TARJETA DE CRÉDITO / DÉBITO -->
+          <div id="pay-panel-card" class="payment-method-panel active">
+            <!-- 3D Card Interactive Preview -->
+            <div class="card-simulator-wrapper">
+              <div class="credit-card-3d" id="credit-card-preview">
+                <div class="card-bg-gradient"></div>
+                <div class="card-top-row">
+                  <div class="card-chip-graphic">
+                    <div class="chip-line"></div>
+                    <div class="chip-line"></div>
+                  </div>
+                  <div class="card-brand-logo" id="card-brand-display">
+                    <span class="brand-text">VISA</span>
+                  </div>
+                </div>
+                <div class="card-number-display" id="card-number-preview">
+                  •••• •••• •••• ••••
+                </div>
+                <div class="card-bottom-row">
+                  <div class="card-holder-group">
+                    <span class="card-label">TITULAR</span>
+                    <span class="card-val" id="card-holder-preview">MILEIDYS AGAMEZ</span>
+                  </div>
+                  <div class="card-expiry-group">
+                    <span class="card-label">VENCE</span>
+                    <span class="card-val" id="card-expiry-preview">12/28</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <form id="card-payment-form" class="payment-inner-form" onsubmit="event.preventDefault(); window.cinemaApp.processSecurePayment();">
+              <div class="form-group">
+                <label for="input-card-number" class="form-label">Número de Tarjeta</label>
+                <div class="input-with-icon">
+                  <input type="text" id="input-card-number" class="stellar-input" placeholder="4532 0000 0000 0000" maxlength="19" required>
+                  <span class="input-badge-brand" id="input-brand-badge">💳</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="input-card-holder" class="form-label">Nombre del Titular (como aparece en el plástico)</label>
+                <input type="text" id="input-card-holder" class="stellar-input" placeholder="MILEIDYS AGAMEZ" required>
+              </div>
+
+              <div class="form-row-grid">
+                <div class="form-group">
+                  <label for="input-card-expiry" class="form-label">Vencimiento (MM/AA)</label>
+                  <input type="text" id="input-card-expiry" class="stellar-input" placeholder="12/28" maxlength="5" required>
+                </div>
+                <div class="form-group">
+                  <label for="input-card-cvv" class="form-label">CVV / CVC (3-4 dígitos)</label>
+                  <input type="password" id="input-card-cvv" class="stellar-input" placeholder="•••" maxlength="4" required>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="select-card-installments" class="form-label">Número de Cuotas</label>
+                <select id="select-card-installments" class="stellar-input">
+                  <option value="1">1 Cuota (Sin intereses - Recomendado)</option>
+                  <option value="2">2 Cuotas</option>
+                  <option value="3">3 Cuotas</option>
+                  <option value="6">6 Cuotas</option>
+                  <option value="12">12 Cuotas</option>
+                </select>
+              </div>
+
+              <div class="form-checkbox-row">
+                <input type="checkbox" id="check-save-card" checked>
+                <label for="check-save-card">Recordar tarjeta de forma segura (Cifrado Tokenizado PCI-DSS Nivel 1)</label>
+              </div>
+
+              <button type="submit" id="btn-submit-card-pay" class="stellar-btn btn-gold btn-block btn-pay-now">
+                Pagar <span class="btn-pay-amount">$0</span> 🔒
+              </button>
+            </form>
+          </div>
+
+          <!-- PANEL 2: PSE -->
+          <div id="pay-panel-pse" class="payment-method-panel">
+            <form id="pse-payment-form" class="payment-inner-form" onsubmit="event.preventDefault(); window.cinemaApp.processSecurePayment();">
+              <div class="pse-banner">
+                <span style="font-size: 1.8rem;">🏦</span>
+                <div>
+                  <strong>Débito Bancario PSE</strong>
+                  <p style="font-size: 0.82rem; color: var(--text-dim); margin-top: 2px;">Transfiere directamente desde tu cuenta corriente o de ahorros sin comisiones.</p>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="select-pse-bank" class="form-label">Selecciona tu Entidad Financiera</label>
+                <select id="select-pse-bank" class="stellar-input" required>
+                  <option value="">-- Selecciona tu banco --</option>
+                  <option value="bancolombia">Bancolombia</option>
+                  <option value="davivienda">Davivienda</option>
+                  <option value="bogota">Banco de Bogotá</option>
+                  <option value="bbva">BBVA Colombia</option>
+                  <option value="nu">Nu Colombia (Cuenta Nu)</option>
+                  <option value="occidente">Banco de Occidente</option>
+                  <option value="scotiabank">Scotiabank Colpatria</option>
+                  <option value="nequi">Nequi</option>
+                  <option value="daviplata">Daviplata</option>
+                </select>
+              </div>
+
+              <div class="form-row-grid">
+                <div class="form-group">
+                  <label for="select-pse-client-type" class="form-label">Tipo de Persona</label>
+                  <select id="select-pse-client-type" class="stellar-input">
+                    <option value="natural">Persona Natural</option>
+                    <option value="juridica">Persona Jurídica</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="input-pse-id-num" class="form-label">Número de Cédula / Documento</label>
+                  <input type="text" id="input-pse-id-num" class="stellar-input" placeholder="1042789123" required>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="input-pse-email" class="form-label">Correo Registrado en PSE</label>
+                <input type="email" id="input-pse-email" class="stellar-input" placeholder="titular@correo.com" required>
+              </div>
+
+              <button type="submit" class="stellar-btn btn-gold btn-block btn-pay-now">
+                Continuar a Pasarela PSE (<span class="btn-pay-amount">$0</span>) 🔒
+              </button>
+            </form>
+          </div>
+
+          <!-- PANEL 3: BILLETERA DIGITAL (NEQUI / DAVIPLATA) -->
+          <div id="pay-panel-wallet" class="payment-method-panel">
+            <form id="wallet-payment-form" class="payment-inner-form" onsubmit="event.preventDefault(); window.cinemaApp.processSecurePayment();">
+              <div class="wallet-options-grid">
+                <label class="wallet-option-card active">
+                  <input type="radio" name="wallet-choice" value="nequi" checked>
+                  <span class="wallet-badge-pill nequi-pill">Nequi</span>
+                  <span style="font-size: 0.8rem; color: var(--text-dim);">Débito instantáneo</span>
+                </label>
+                <label class="wallet-option-card">
+                  <input type="radio" name="wallet-choice" value="daviplata">
+                  <span class="wallet-badge-pill daviplata-pill">Daviplata</span>
+                  <span style="font-size: 0.8rem; color: var(--text-dim);">Código de confirmación</span>
+                </label>
+              </div>
+
+              <div class="form-group">
+                <label for="input-wallet-phone" class="form-label">Número de Teléfono Celular</label>
+                <input type="tel" id="input-wallet-phone" class="stellar-input" placeholder="300 123 4567" required>
+              </div>
+
+              <div class="wallet-instructions-box">
+                <span style="font-size: 1.2rem;">📲</span>
+                <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.4;">
+                  Al presionar pagar, recibirás una solicitud de aprobación en tu aplicación móvil. Tendrás 3 minutos para aceptarla.
+                </p>
+              </div>
+
+              <button type="submit" class="stellar-btn btn-gold btn-block btn-pay-now">
+                Enviar Solicitud de Pago (<span class="btn-pay-amount">$0</span>) 🔒
+              </button>
+            </form>
+          </div>
+
+          <!-- Sellos de Seguridad y Confianza -->
+          <div class="security-seals-row">
+            <div class="seal-item">
+              <span class="seal-icon">🛡️</span>
+              <div>
+                <strong>PCI-DSS Nivel 1</strong>
+                <p>Estándar bancario internacional</p>
+              </div>
+            </div>
+            <div class="seal-item">
+              <span class="seal-icon">🔒</span>
+              <div>
+                <strong>Cifrado TLS 1.3</strong>
+                <p>Datos en tránsito protegidos</p>
+              </div>
+            </div>
+            <div class="seal-item">
+              <span class="seal-icon">✓</span>
+              <div>
+                <strong>3D Secure 2.0</strong>
+                <p>Autenticación de dos pasos</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna Derecha: Resumen de Compra Detallado -->
+        <aside class="checkout-summary-column">
+          <div class="checkout-summary-card">
+            <h3 class="summary-card-title">Resumen de Tu Compra</h3>
+
+            <!-- Ficha de Película y Sesión -->
+            <div class="checkout-movie-card">
+              <img id="checkout-movie-poster" src="assets/images/dune.jpg" alt="Póster" class="checkout-poster-img">
+              <div class="checkout-movie-info">
+                <h4 id="checkout-movie-title" class="checkout-movie-title">Dune: Parte Dos</h4>
+                <div class="checkout-badges-row">
+                  <span id="checkout-movie-format" class="pill-badge gold">IMAX 3D</span>
+                  <span id="checkout-movie-room" class="pill-badge">Sala IMAX 01</span>
+                </div>
+                <div class="checkout-meta-row" id="checkout-movie-schedule">
+                  📅 Hoy • 7:30 PM
+                </div>
+              </div>
+            </div>
+
+            <hr class="summary-divider">
+
+            <!-- Detalle de Butacas -->
+            <div class="checkout-line-items-group">
+              <div class="line-group-title">Entradas de Cine</div>
+              <div id="checkout-seats-list" class="checkout-seats-list">
+                <p style="color: var(--text-dim); font-size: 0.85rem;">No has seleccionado butacas.</p>
+              </div>
+            </div>
+
+            <!-- Detalle de Confitería -->
+            <div class="checkout-line-items-group">
+              <div class="line-group-title">Confitería & Snacks</div>
+              <div id="checkout-snacks-list" class="checkout-snacks-list">
+                <p style="color: var(--text-dim); font-size: 0.85rem;">Sin productos de confitería.</p>
+              </div>
+            </div>
+
+            <hr class="summary-divider">
+
+            <!-- Totales Financieros -->
+            <div class="checkout-financial-table">
+              <div class="summary-line-item">
+                <span>Subtotal Entradas:</span>
+                <span id="checkout-subtotal-seats">$0</span>
+              </div>
+              <div class="summary-line-item">
+                <span>Subtotal Confitería:</span>
+                <span id="checkout-subtotal-snacks">$0</span>
+              </div>
+              <div class="summary-line-item">
+                <span>Tarifa de Servicio & IVA (19% inc.):</span>
+                <span id="checkout-taxes-amount">$0</span>
+              </div>
+              <div class="summary-line-item discount-line" id="checkout-discount-row" style="display: none;">
+                <span>Descuento Socio Stellar:</span>
+                <span id="checkout-discount-amount" style="color: var(--accent-emerald);">-$0</span>
+              </div>
+            </div>
+
+            <div class="summary-total-section checkout-grand-total-box">
+              <div>
+                <span class="summary-total-label">Total a Cobrar</span>
+                <span style="font-size: 0.76rem; color: var(--text-dim); display: block;">Impuestos incluidos</span>
+              </div>
+              <span id="checkout-grand-total" class="summary-total-amount">$0</span>
+            </div>
+
+            <!-- Beneficio Stellar Club -->
+            <div class="stellar-points-reward-box">
+              <span style="font-size: 1.4rem;">⭐</span>
+              <div>
+                <strong>+<span id="checkout-points-earned">65</span> Puntos Stellar Club</strong>
+                <p style="font-size: 0.78rem; color: var(--text-dim);">Se abonarán a tu cuenta al finalizar esta compra.</p>
+              </div>
+            </div>
+
+            <!-- Cuenta Compradora -->
+            <div class="checkout-buyer-info">
+              <span style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Facturar a:</span>
+              <div style="font-size: 0.88rem; font-weight: 600; color: #ffffff;" id="checkout-buyer-name">Mileidys Agamez</div>
+              <div style="font-size: 0.8rem; color: var(--accent-gold);" id="checkout-buyer-email">mileidys@correo.com</div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
 
   <!-- =========================================================================
        VISTA 4: TICKET DIGITAL CON CÓDIGO QR (Digital Boarding Pass)
@@ -641,5 +996,111 @@
   <!-- Scripts de la Aplicación -->
   <script src="js/movies_data.js"></script>
   <script src="js/app.js"></script>
+  <!-- =========================================================================
+       MODAL DE AUTENTICACION Y REGISTRO (STELLAR CLUB)
+       ========================================================================= -->
+  <div id="auth-modal" class="stellar-modal-overlay">
+    <div class="stellar-modal-container auth-modal-box">
+      <button class="modal-close-btn" onclick="window.cinemaApp.closeAuthModal()" aria-label="Cerrar modal">&times;</button>
+
+      <div class="auth-modal-header">
+        <span class="brand-title" style="font-size: 1.4rem;">CINEMA<span class="brand-highlight">STELLAR</span></span>
+        <div class="auth-modal-tabs">
+          <button type="button" class="auth-tab-btn active" id="btn-tab-login" onclick="window.cinemaApp.switchAuthTab('login')">
+            Iniciar Sesión
+          </button>
+          <button type="button" class="auth-tab-btn" id="btn-tab-register" onclick="window.cinemaApp.switchAuthTab('register')">
+            Crear Cuenta
+          </button>
+        </div>
+      </div>
+
+      <!-- Tab 1: Iniciar Sesión -->
+      <form id="form-auth-login" class="auth-modal-body active" onsubmit="event.preventDefault(); window.cinemaApp.submitLogin();">
+        <p class="auth-modal-lead" id="auth-modal-lead-text">
+          Ingresa a tu cuenta para acumular puntos, gestionar tus boletos con código QR y acceder a la pasarela de pago segura.
+        </p>
+
+        <div class="form-group">
+          <label for="input-login-email" class="form-label">Correo Electrónico</label>
+          <input type="email" id="input-login-email" class="stellar-input" placeholder="ejemplo@correo.com" value="mileidys@cinemastellar.co" required>
+        </div>
+
+        <div class="form-group">
+          <label for="input-login-password" class="form-label">Contraseña</label>
+          <input type="password" id="input-login-password" class="stellar-input" placeholder="••••••••" value="stellar2026" required>
+        </div>
+
+        <div class="form-row-between" style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+          <label class="form-checkbox-inline" style="font-size: 0.8rem; color: var(--text-dim); display: flex; align-items: center; gap: 6px; cursor: pointer;">
+            <input type="checkbox" id="check-remember-me" checked>
+            <span>Recordarme</span>
+          </label>
+          <a href="#" onclick="event.preventDefault(); alert('Se ha enviado un enlace de recuperación a tu correo.');" style="font-size: 0.8rem; color: var(--accent-gold); text-decoration: none;">¿Olvidaste tu clave?</a>
+        </div>
+
+        <button type="submit" class="stellar-btn btn-gold btn-block" style="margin-top: 16px;">
+          Ingresar a CinemaStellar 🎬
+        </button>
+
+        <button type="button" class="stellar-btn btn-secondary btn-block" style="margin-top: 8px;" onclick="window.cinemaApp.loginDemoUser()">
+          ⚡ Acceso Rápido Demo (Mileidys Agamez)
+        </button>
+      </form>
+
+      <!-- Tab 2: Crear Cuenta -->
+      <form id="form-auth-register" class="auth-modal-body" onsubmit="event.preventDefault(); window.cinemaApp.submitRegister();">
+        <p class="auth-modal-lead">
+          Únete gratis a <strong>Stellar Club</strong> y recibe 100 puntos de bienvenida, descuentos en taquilla y preventas exclusivas.
+        </p>
+
+        <div class="form-group">
+          <label for="input-reg-name" class="form-label">Nombre Completo</label>
+          <input type="text" id="input-reg-name" class="stellar-input" placeholder="Tu nombre y apellido" required>
+        </div>
+
+        <div class="form-group">
+          <label for="input-reg-email" class="form-label">Correo Electrónico</label>
+          <input type="email" id="input-reg-email" class="stellar-input" placeholder="tu@correo.com" required>
+        </div>
+
+        <div class="form-row-grid">
+          <div class="form-group">
+            <label for="input-reg-password" class="form-label">Contraseña</label>
+            <input type="password" id="input-reg-password" class="stellar-input" placeholder="Mínimo 6 caracteres" required>
+          </div>
+          <div class="form-group">
+            <label for="input-reg-phone" class="form-label">Teléfono Móvil</label>
+            <input type="tel" id="input-reg-phone" class="stellar-input" placeholder="300 000 0000" required>
+          </div>
+        </div>
+
+        <div class="form-checkbox-row">
+          <input type="checkbox" id="check-reg-terms" checked required>
+          <label for="check-reg-terms">Acepto los Términos y la Política de Protección de Datos de CinemaStellar.</label>
+        </div>
+
+        <button type="submit" class="stellar-btn btn-gold btn-block" style="margin-top: 14px;">
+          Crear Cuenta y Continuar ⭐
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- OVERLAY DE PROCESAMIENTO BANCARIO -->
+  <div id="payment-processing-overlay" class="stellar-modal-overlay payment-loader-overlay">
+    <div class="payment-loader-card">
+      <div class="stellar-spinner-ring"></div>
+      <h3 class="payment-loader-title" id="payment-loader-title">Procesando Pago Seguro...</h3>
+      <p class="payment-loader-step" id="payment-loader-step">Estableciendo conexión cifrada con la red financiera...</p>
+      <div class="payment-progress-bar-track">
+        <div class="payment-progress-bar-fill" id="payment-progress-fill"></div>
+      </div>
+      <div class="payment-loader-security-note">
+        🔒 Por favor no recargues ni cierres esta ventana mientras confirmamos la transacción.
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
