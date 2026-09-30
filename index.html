@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CinemaStellar &mdash; Portal Cinematográfico y Cartelera Interactiva</title>
+  <meta name="description" content="Portal interactivo de cine de alta fidelidad con selector de butacas en SVG, cartelera estelar, trailers oficiales y tickets digitales con código QR.">
+  <meta name="author" content="Mileidys Agamez Ospino">
+  
+  <!-- Favicon e Íconos -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
+
+  <!-- Google Fonts: Outfit, Plus Jakarta Sans, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Estilos Centrales -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- Fondo Ambiental Estelar -->
+  <div class="stellar-stars" aria-hidden="true"></div>
+
+  <!-- Barra de Navegación Principal -->
+  <header class="cinema-header">
+    <div class="container header-container">
+      <a href="#view-billboard" class="brand-logo" id="main-brand-logo">
+        <span class="brand-star">★</span>
+        <span class="brand-title">CINEMA<span class="brand-highlight">STELLAR</span></span>
+      </a>
+
+      <nav class="nav-menu" aria-label="Navegación principal">
+        <a href="#view-billboard" class="nav-link active">Cartelera</a>
+        <a href="#view-seats" class="nav-link">Selector de Sala</a>
+        <a href="#view-snacks" class="nav-link">Confitería</a>
+        <a href="#view-history" class="nav-link">Mis Boletos</a>
+        <a href="#view-contact" class="nav-link">Corporativo & Contacto</a>
+      </nav>
+
+      <div class="header-actions">
+        <a href="#view-seats" class="stellar-btn btn-gold btn-sm">
+          Reservar Ahora
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- =========================================================================
+       VISTA 1: CARTELERA Y ESTRENOS (Home Billboard)
+       ========================================================================= -->
+  <main id="view-billboard" class="spa-view active">
+    
+    <!-- Hero Spotlight Cinematográfico -->
+    <section class="hero-section">
+      <div class="container">
+        <div class="hero-spotlight">
+          <div class="spotlight-content">
+            <div class="spotlight-badge">
+              <span class="badge-pulse"></span>
+              ESTRENO EXCLUSIVO IMAX 3D
+            </div>
+            <h1 class="spotlight-title">Dune: Parte Dos</h1>
+            <p class="spotlight-tagline">El destino de una galaxia se forja en las arenas de Arrakis.</p>
+            <div class="spotlight-meta">
+              <span class="meta-item"><strong style="color: var(--accent-gold);">★ 8.9</strong> / 10 IMDb</span>
+              <span class="meta-item">166 min</span>
+              <span class="meta-item">Clasificación +13</span>
+              <span class="meta-item">Ciencia Ficción • Aventura</span>
+            </div>
+            <p class="spotlight-synopsis">
+              Paul Atreides se une a Chani y a los Fremen en su viaje de venganza contra los conspiradores que destruyeron a su dinastía. Al enfrentarse al amor y al destino universal, desafiará el orden imperial en una experiencia visual colosal.
+            </p>
+            <div class="spotlight-buttons">
+              <button class="stellar-btn btn-gold" onclick="window.cinemaApp.startBooking('mov-dune-2')">
+                🎟️ Comprar Entradas
+              </button>
+              <button class="stellar-btn btn-secondary" onclick="window.cinemaApp.openTrailerModal('mov-dune-2')">
+                ▶ Ver Trailer Oficial
+              </button>
+            </div>
+          </div>
+          <div class="spotlight-poster-card">
+            <img src="assets/images/dune.jpg" alt="Póster oficial de Dune Parte Dos" class="spotlight-poster-img">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Barra de Filtros y Búsqueda -->
+    <section class="catalog-section">
+      <div class="container">
+        <div class="catalog-toolbar">
+          <div class="toolbar-title-wrap">
+            <h2 class="section-heading">En Cartelera Estelar</h2>
+            <p class="section-subtext">Selecciona tu película favorita y vive el cine con tecnología acústica inmersiva.</p>
+          </div>
+
+          <div class="search-box-wrap">
+            <span class="search-icon">🔍</span>
+            <input
+              type="text"
+              id="movie-search-input"
+              class="cinema-search-input"
+              placeholder="Buscar por título, actor o director..."
+              aria-label="Buscar película">
+          </div>
+        </div>
+
+        <div class="filter-pills-row" role="tablist">
+          <button class="filter-pill active" data-filter="all">Todos los Títulos</button>
+          <button class="filter-pill" data-filter="featured">Destacadas</button>
+          <button class="filter-pill" data-filter="Ciencia Ficción">Ciencia Ficción</button>
+          <button class="filter-pill" data-filter="Acción">Acción</button>
+          <button class="filter-pill" data-filter="Romance">Romance</button>
+          <button class="filter-pill" data-filter="Suspenso">Suspenso</button>
+        </div>
+
+        <!-- Rejilla Reactiva de Películas -->
+        <div id="movies-catalog-grid" class="movies-grid">
+          <!-- Inyectado dinámicamente por app.js -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Banner Experiencia VIP y Sonido Láser -->
+    <section class="vip-features-section">
+      <div class="container">
+        <div class="vip-banner-box">
+          <div class="vip-banner-text">
+            <span class="vip-label">TECNOLOGÍA AUDIOVISUAL ESTELAR</span>
+            <h2 class="vip-title">Salas IMAX Láser & Sonido Dolby Atmos</h2>
+            <p class="vip-description">
+              Butacas ergonómicas reclinables de cuero ecológico, proyección 4K HDR de 60 FPS con contraste infinito y sistema de sonido espacial de 64 canales para sumergirte en cada escena.
+            </p>
+            <div class="vip-perks-row">
+              <div class="perk-badge"><span>💺</span> Butacas Reclinables VIP</div>
+              <div class="perk-badge"><span>🍿</span> Servicio a la Sala</div>
+              <div class="perk-badge"><span>🔊</span> Dolby Atmos 360°</div>
+              <div class="perk-badge"><span>🎟️</span> Boletos 100% Digitales</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =========================================================================
+       VISTA 2: SELECTOR DE SALA Y BUTACAS SVG (Seat Booking Flow)
+       ========================================================================= -->
+  <section id="view-seats" class="spa-view">
+    <div class="container">
+      
+      <!-- Paso a Paso del Flujo -->
+      <div class="booking-steps-bar">
+        <div class="step-item completed">
+          <span class="step-circle">✓</span>
+          <span class="step-text">Película</span>
+        </div>
+        <div class="step-connector active"></div>
+        <div class="step-item active">
+          <span class="step-circle">2</span>
+          <span class="step-text">Butacas</span>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step-item">
+          <span class="step-circle">3</span>
+          <span class="step-text">Confitería</span>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step-item">
+          <span class="step-circle">4</span>
+          <span class="step-text">Boleto QR</span>
+        </div>
+      </div>
+
+      <div class="booking-layout">
+        <!-- Columna Izquierda: Sala de Proyección y Matriz -->
+        <div class="cinema-room-panel">
+          <div class="room-header-meta">
+            <div>
+              <h2 id="booking-movie-title" class="booking-header-title">Dune: Parte Dos</h2>
+              <div id="booking-movie-badge" class="booking-header-sub">Ciencia Ficción • Sala IMAX 01</div>
+            </div>
+            <a href="#view-billboard" class="stellar-btn btn-secondary btn-sm">Cambiar Película</a>
+          </div>
+
+          <!-- Selector de Horarios y Formato -->
+          <div class="booking-selectors-strip">
+            <div class="selector-group">
+              <label class="selector-label">Selecciona el Horario:</label>
+              <div id="booking-showtimes-list" class="selector-pills-row">
+                <!-- Inyectado dinámicamente -->
+              </div>
+            </div>
+
+            <div class="selector-group">
+              <label class="selector-label">Formato de Pantalla:</label>
+              <div id="booking-formats-list" class="selector-pills-row">
+                <!-- Inyectado dinámicamente -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Pantalla Curva IMAX -->
+          <div class="screen-indicator-wrap">
+            <div class="screen-curve"></div>
+            <span class="screen-label">PANTALLA IMAX LÁSER CURVA</span>
+          </div>
+
+          <!-- Matriz de Butacas SVG / HTML Grid -->
+          <div id="seats-matrix-container" class="seats-matrix-wrap">
+            <!-- Inyectado dinámicamente por app.js -->
+          </div>
+
+          <!-- Leyenda de Estados de Butacas -->
+          <div class="seats-legend-bar">
+            <div class="legend-item">
+              <span class="legend-swatch available"></span>
+              <span>General ($15K - $18K)</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-swatch vip"></span>
+              <span>VIP Reclinable ($24K - $26K)</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-swatch selected"></span>
+              <span>Seleccionada</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-swatch occupied"></span>
+              <span>Ocupada</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna Derecha: Resumen de Reserva -->
+        <aside class="booking-summary-sidebar">
+          <div class="summary-card">
+            <h3 class="summary-card-title">Resumen de Tu Reserva</h3>
+
+            <div class="summary-poster-wrap">
+              <img id="booking-movie-poster" src="assets/images/dune.jpg" alt="Póster de la película seleccionada" class="summary-poster-img">
+            </div>
+
+            <div class="summary-info-block">
+              <div class="summary-meta-line">
+                <span class="summary-label">Sala</span>
+                <span class="summary-val">Sala IMAX 01 (Láser 4K)</span>
+              </div>
+              <div class="summary-meta-line">
+                <span class="summary-label">Ubicación</span>
+                <span class="summary-val">Centro Comercial Estelar</span>
+              </div>
+            </div>
+
+            <div class="summary-seats-section">
+              <span class="summary-label">Butacas Seleccionadas:</span>
+              <div id="summary-selected-seats" class="selected-seats-chip-container">
+                <span style="color: var(--text-dim);">Ninguna butaca seleccionada aún</span>
+              </div>
+            </div>
+
+            <div class="summary-total-section">
+              <span class="summary-total-label">Subtotal Butacas</span>
+              <span id="summary-seats-total" class="summary-total-amount">$0</span>
+            </div>
+
+            <button id="btn-continue-to-snacks" class="stellar-btn btn-gold btn-block disabled" disabled>
+              Continuar a Confitería →
+            </button>
+            <p style="text-align: center; color: var(--text-dim); font-size: 0.8rem; margin-top: 10px;">
+              Podrás agregar palomitas y bebidas en el siguiente paso.
+            </p>
+          </div>
+        </aside>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       VISTA 3: CONFITERÍA Y SNACKS ESTELARES (Concession Stand)
+       ========================================================================= -->
+  <section id="view-snacks" class="spa-view">
+    <div class="container">
+
+      <!-- Paso a Paso del Flujo -->
+      <div class="booking-steps-bar">
+        <div class="step-item completed">
+          <span class="step-circle">✓</span>
+          <span class="step-text">Película</span>
+        </div>
+        <div class="step-connector active"></div>
+        <div class="step-item completed">
+          <span class="step-circle">✓</span>
+          <span class="step-text">Butacas</span>
+        </div>
+        <div class="step-connector active"></div>
+        <div class="step-item active">
+          <span class="step-circle">3</span>
+          <span class="step-text">Confitería</span>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step-item">
+          <span class="step-circle">4</span>
+          <span class="step-text">Boleto QR</span>
+        </div>
+      </div>
+
+      <div class="snacks-layout">
+        <!-- Rejilla de Confitería -->
+        <div class="snacks-catalog-panel">
+          <div class="snacks-header">
+            <h2 class="section-heading">Confitería & Snacks Estelares</h2>
+            <p class="section-subtext">Acompaña tu función con nuestras crispetas artesanales y combos exclusivos.</p>
+          </div>
+
+          <div id="snacks-catalog-grid" class="snacks-grid">
+            <!-- Inyectado dinámicamente por app.js -->
+          </div>
+        </div>
+
+        <!-- Resumen de Pedido -->
+        <aside class="snacks-summary-sidebar">
+          <div class="summary-card">
+            <h3 class="summary-card-title">Resumen de Tu Pedido</h3>
+
+            <div id="snacks-summary-items" class="snacks-items-list">
+              <p style="color: var(--text-dim);">No has agregado productos de confitería aún.</p>
+            </div>
+
+            <hr class="summary-divider">
+
+            <div class="summary-line-item">
+              <span>Subtotal Confitería:</span>
+              <span id="snacks-summary-subtotal" style="font-weight: 600;">$0</span>
+            </div>
+
+            <div class="summary-total-section">
+              <span class="summary-total-label">Total a Pagar</span>
+              <span id="snacks-grand-total" class="summary-total-amount">$0</span>
+            </div>
+
+            <div class="snacks-actions-row">
+              <button id="btn-finish-booking" class="stellar-btn btn-gold btn-block">
+                Confirmar y Emitir Boleto
+              </button>
+              <button id="btn-skip-snacks" class="stellar-btn btn-secondary btn-block">
+                Omitir Snacks y Continuar
+              </button>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       VISTA 4: TICKET DIGITAL CON CÓDIGO QR (Digital Boarding Pass)
+       ========================================================================= -->
+  <section id="view-ticket" class="spa-view">
+    <div class="container">
+
+      <!-- Paso a Paso del Flujo -->
+      <div class="booking-steps-bar">
+        <div class="step-item completed">
+          <span class="step-circle">✓</span>
+          <span class="step-text">Película</span>
+        </div>
+        <div class="step-connector active"></div>
+        <div class="step-item completed">
+          <span class="step-circle">✓</span>
+          <span class="step-text">Butacas</span>
+        </div>
+        <div class="step-connector active"></div>
+        <div class="step-item completed">
+          <span class="step-circle">✓</span>
+          <span class="step-text">Confitería</span>
+        </div>
+        <div class="step-connector active"></div>
+        <div class="step-item active">
+          <span class="step-circle">★</span>
+          <span class="step-text">Boleto Emitido</span>
+        </div>
+      </div>
+
+      <div class="ticket-view-wrapper">
+        <div class="ticket-success-banner">
+          <div class="success-icon">🎟️</div>
+          <h2 class="success-title">¡Tu Reserva Está Confirmada!</h2>
+          <p class="success-subtext">Presenta el siguiente código QR en el acceso a la sala o descárgalo en tu dispositivo.</p>
+        </div>
+
+        <!-- Tarjeta de Entrada Boarding Pass Cinematográfica -->
+        <div class="digital-ticket-card" id="digital-ticket-element">
+          <div class="ticket-header-strip">
+            <div class="ticket-logo-text">★ CINEMASTELLAR</div>
+            <div class="ticket-id-tag">
+              ID: <span id="ticket-display-id">CST-849201</span>
+            </div>
+          </div>
+
+          <div class="ticket-body-content">
+            <div class="ticket-primary-data">
+              <h3 id="ticket-display-movie" class="ticket-movie-title">Dune: Parte Dos</h3>
+              
+              <div class="ticket-data-grid">
+                <div class="ticket-field">
+                  <span class="field-label">FECHA</span>
+                  <span id="ticket-display-date" class="field-val">Hoy</span>
+                </div>
+                <div class="ticket-field">
+                  <span class="field-label">HORA FUNCIÓN</span>
+                  <span id="ticket-display-showtime" class="field-val">17:45 hrs</span>
+                </div>
+                <div class="ticket-field">
+                  <span class="field-label">SALA</span>
+                  <span id="ticket-display-room" class="field-val">Sala IMAX 01</span>
+                </div>
+                <div class="ticket-field">
+                  <span class="field-label">FORMATO</span>
+                  <span id="ticket-display-format" class="field-val">IMAX 3D</span>
+                </div>
+                <div class="ticket-field ticket-field-wide">
+                  <span class="field-label">BUTACAS ASIGNADAS</span>
+                  <span id="ticket-display-seats" class="field-val highlight-val">G5, G6 (VIP)</span>
+                </div>
+                <div class="ticket-field ticket-field-wide">
+                  <span class="field-label">CONFITERÍA INCLUIDA</span>
+                  <span id="ticket-display-snacks" class="field-val">Crispetas Grandes (x1), Gaseosa 32oz (x2)</span>
+                </div>
+              </div>
+
+              <div class="ticket-total-strip">
+                <span class="total-label">Total Pagado:</span>
+                <span id="ticket-display-total" class="total-amount">$56,000 COP</span>
+              </div>
+            </div>
+
+            <!-- Columna QR de Control -->
+            <div class="ticket-qr-container">
+              <div class="qr-box">
+                <canvas id="ticket-qr-canvas" width="160" height="160"></canvas>
+              </div>
+              <span class="qr-hint">Escanea en Puerta 01</span>
+              <div class="qr-verify-badge">VALIDADO OFICIAL</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Canvas oculto para renderizado de alta fidelidad exportable a PNG -->
+        <canvas id="ticket-render-canvas" style="display: none;"></canvas>
+
+        <!-- Botones de Acción de Ticket -->
+        <div class="ticket-actions-buttons">
+          <button id="btn-download-ticket-png" class="stellar-btn btn-gold">
+            📥 Descargar Boleto Oficial (PNG)
+          </button>
+          <a href="#view-billboard" class="stellar-btn btn-secondary">
+            🎬 Volver a la Cartelera
+          </a>
+          <a href="#view-history" class="stellar-btn btn-secondary">
+            📋 Ver Mis Boletos Guardados
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       VISTA 5: HISTORIAL DE BOLETOS (Mis Boletos en LocalStorage)
+       ========================================================================= -->
+  <section id="view-history" class="spa-view">
+    <div class="container">
+      <div class="section-header-block">
+        <h2 class="section-heading">Mis Boletos & Historial de Funciones</h2>
+        <p class="section-subtext">Historial de entradas y transacciones almacenadas de forma privada en tu navegador.</p>
+      </div>
+
+      <div id="history-bookings-list" class="history-list-grid">
+        <!-- Inyectado dinámicamente por app.js -->
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       VISTA 6: CONTACTO Y EVENTOS CORPORATIVOS
+       ========================================================================= -->
+  <section id="view-contact" class="spa-view">
+    <div class="container">
+      <div class="contact-card-wrap">
+        <div class="contact-info-side">
+          <h2 class="section-heading" style="color: #fff;">Contacto & Eventos Corporativos</h2>
+          <p style="color: var(--text-muted); margin-bottom: 24px;">
+            ¿Deseas alquilar una sala privada para lanzamientos empresariales, proyecciones universitarias o cumpleaños estelares? Contáctanos y nuestro equipo de hospitalidad te responderá en menos de 2 horas.
+          </p>
+
+          <div class="contact-meta-row">
+            <div class="contact-meta-item">
+              <span class="contact-icon">📍</span>
+              <div>
+                <strong>Ubicación Central</strong>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Av. de las Estrellas #45-10, Sala Principal</p>
+              </div>
+            </div>
+            <div class="contact-meta-item">
+              <span class="contact-icon">📞</span>
+              <div>
+                <strong>Línea de Atención VIP</strong>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">+57 (605) 300-STELLAR (7835)</p>
+              </div>
+            </div>
+            <div class="contact-meta-item">
+              <span class="contact-icon">✉️</span>
+              <div>
+                <strong>Correo Corporativo</strong>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">reservas@cinemastellar.com</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="contact-form-side">
+          <form id="cinema-contact-form" class="stellar-form">
+            <div class="form-group">
+              <label for="contact-name" class="form-label">Nombre Completo</label>
+              <input type="text" id="contact-name" class="form-input" placeholder="Ej: Camilo Torres" required>
+            </div>
+            <div class="form-group">
+              <label for="contact-email" class="form-label">Correo Electrónico</label>
+              <input type="email" id="contact-email" class="form-input" placeholder="camilo@empresa.com" required>
+            </div>
+            <div class="form-group">
+              <label for="contact-type" class="form-label">Tipo de Solicitud</label>
+              <select id="contact-type" class="form-input">
+                <option value="corporativo">Alquiler de Sala Corporativa</option>
+                <option value="cumpleanos">Función Privada de Cumpleaños</option>
+                <option value="prensa">Prensa & Festivales de Cine</option>
+                <option value="sugerencia">Atención al Cliente y Sugerencias</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="contact-message" class="form-label">Detalles del Evento o Mensaje</label>
+              <textarea id="contact-message" class="form-input" rows="4" placeholder="Indica fecha tentativa, número estimado de invitados y requisitos especiales..." required></textarea>
+            </div>
+            <button type="submit" class="stellar-btn btn-gold btn-block">
+              Enviar Solicitud
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       MODAL 1: REPRODUCTOR DE TRAILERS EN STREAMING (YouTube)
+       ========================================================================= -->
+  <div id="trailer-modal" class="stellar-modal" role="dialog" aria-modal="true" aria-labelledby="trailer-modal-title">
+    <div class="modal-dialog video-modal-dialog">
+      <div class="modal-header">
+        <h3 id="trailer-modal-title" class="modal-title">Trailer Oficial</h3>
+        <button type="button" class="close-modal-btn" aria-label="Cerrar modal">&times;</button>
+      </div>
+      <div id="trailer-video-container" class="video-responsive-wrap">
+        <!-- El iframe de YouTube se inserta dinámicamente al abrir -->
+      </div>
+      <div class="trailer-meta-footer">
+        <p id="trailer-modal-meta" style="color: var(--text-muted); font-size: 0.9rem;"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL 2: FICHA DETALLADA DE PELÍCULA
+       ========================================================================= -->
+  <div id="movie-details-modal" class="stellar-modal" role="dialog" aria-modal="true" aria-labelledby="modal-details-title">
+    <div class="modal-dialog movie-details-dialog">
+      <div class="modal-header">
+        <h3 id="modal-details-title" class="modal-title">Título de Película</h3>
+        <button type="button" class="close-modal-btn" aria-label="Cerrar modal">&times;</button>
+      </div>
+      <div class="modal-details-body">
+        <div class="modal-poster-col">
+          <img id="modal-details-poster" src="assets/images/dune.jpg" alt="Póster" class="modal-poster-img">
+        </div>
+        <div class="modal-info-col">
+          <div id="modal-details-genre" class="modal-genre-tag">Ciencia Ficción • 166 min</div>
+          <div id="modal-details-rating" class="modal-rating-badge">★ 8.9 / 10</div>
+          
+          <h4 style="color: #fff; margin: 16px 0 6px;">Sinopsis</h4>
+          <p id="modal-details-synopsis" class="modal-synopsis-text"></p>
+          
+          <div class="modal-credits">
+            <p><strong>Director:</strong> <span id="modal-details-director">Denis Villeneuve</span></p>
+            <p><strong>Reparto:</strong> <span id="modal-details-cast">Timothée Chalamet, Zendaya</span></p>
+          </div>
+
+          <div style="margin-top: 14px;">
+            <strong style="color: var(--text-muted); font-size: 0.85rem;">Formatos Disponibles:</strong>
+            <div id="modal-details-formats" style="margin-top: 6px;"></div>
+          </div>
+
+          <div class="modal-cta-row">
+            <button id="modal-btn-book" class="stellar-btn btn-gold">
+              🎟️ Comprar Boletos
+            </button>
+            <button id="modal-btn-trailer" class="stellar-btn btn-secondary">
+              ▶ Ver Trailer
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pie de Página -->
+  <footer class="cinema-footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <div class="brand-logo">
+          <span class="brand-star">★</span>
+          <span class="brand-title">CINEMA<span class="brand-highlight">STELLAR</span></span>
+        </div>
+        <p class="footer-brand-text">
+          Portal Cinematográfico Interactivo &copy; 2026 &bull; Desarrollado por <strong>Mileidys Agamez Ospino</strong>.
+        </p>
+      </div>
+      <div class="footer-badges">
+        <span class="badge-pill">Google Cloud OKF v0.2</span>
+        <span class="badge-pill">Single Page Application (SPA)</span>
+        <span class="badge-pill">100% Vanilla JS & CSS</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts de la Aplicación -->
+  <script src="js/movies_data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

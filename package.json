@@ -1,0 +1,24 @@
+{
+  "name": "cinemastellar",
+  "version": "2.0.0",
+  "description": "Portal Cinematográfico Interactivo SPA con Selector de Butacas SVG, Catálogo Dinámico y Tickets Digitales con QR",
+  "main": "index.html",
+  "scripts": {
+    "start": "python serve.py",
+    "test": "pytest tests/test_cinemastellar.py -v"
+  },
+  "keywords": [
+    "cinemastellar",
+    "cinema",
+    "movies",
+    "spa",
+    "seat-selection",
+    "vanilla-js",
+    "qr-code",
+    "canvas-ticket"
+  ],
+  "author": "Mileidys Agamez Ospino",
+  "license": "MIT",
+  "devDependencies": {},
+  "dependencies": {}
+}

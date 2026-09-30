@@ -1,0 +1,18 @@
+# Governance & Agentic files (Privado - No subir a GitHub)
+AGENTS.md
+.env
+.env.*
+
+# Python Cache & Testing
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node & IDE
+node_modules/
+.vscode/
+.idea/
+*.log
