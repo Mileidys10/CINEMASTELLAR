@@ -1,5 +1,23 @@
 # ★ CINEMASTELLAR &mdash; Portal Cinematográfico y Cartelera Interactiva
 
+
+## 🐳 Despliegue Inmediato con Docker (Sin Dependencias)
+
+Puedes servir la aplicación web completa a través de un contenedor ultraligero de **Nginx Alpine** sin instalar Python ni Node.js:
+
+```bash
+# 1. Clonar el repositorio
+git clone https://github.com/Mileidys10/cinemastellar.git
+cd cinemastellar
+
+# 2. Iniciar el servidor web con Docker Compose
+docker compose up --build -d
+```
+
+- 🌐 **Acceso Web:** [http://localhost:3001](http://localhost:3001)
+
+---
+
 > Plataforma web de entretenimiento cinematográfico interactivo de alta fidelidad, desarrollada bajo arquitectura Single Page Application (SPA) sin dependencias externas pesadas.
 
 ![CinemaStellar Banner](assets/images/cinema_hero_banner.jpg)

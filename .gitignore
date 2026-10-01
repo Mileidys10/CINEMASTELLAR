@@ -16,3 +16,14 @@ node_modules/
 .vscode/
 .idea/
 *.log
+
+# Proteccion automatica de secretos de fabrica
+*.env
+.env.local
+credentials.json
+service_account.json
+GEMINI.md
+.agents/
+.gemini/
+contexto/
+obsidian-vault/

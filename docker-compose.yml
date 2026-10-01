@@ -1,0 +1,19 @@
+# ==============================================================================
+# docker-compose.yml — CinemaStellar Web Workstation
+# Ejecución en un solo comando: docker compose up --build -d
+# ==============================================================================
+
+services:
+  cinemastellar:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cinemastellar-web
+    ports:
+      - "3001:80"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost/"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
