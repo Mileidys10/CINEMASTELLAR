@@ -4,8 +4,8 @@ from PIL import Image
 
 sys.stdout.reconfigure(encoding='utf-8')
 
-MEDIA_DIR = r"c:\Users\POWER\maquinaprogramadora\cinemastellar\Media"
-TARGET_DIR = r"c:\Users\POWER\maquinaprogramadora\cinemastellar\assets\images"
+MEDIA_DIR = r"Media"
+TARGET_DIR = r"assets\images"
 
 os.makedirs(TARGET_DIR, exist_ok=True)
 

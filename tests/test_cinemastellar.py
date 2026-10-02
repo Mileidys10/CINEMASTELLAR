@@ -1,7 +1,7 @@
 """
 CINEMASTELLAR - Test Suite Automatizada de Aceptación y Calidad (QA)
 Compatible con unittest estándar y pytest
-Gobernanza: Google Cloud OKF v0.2
+Suite de Pruebas Automatizadas
 Estandar: ISO 25010 & Mandato de Cero Alucinaciones
 """
 

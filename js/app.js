@@ -2,7 +2,7 @@
  * CINEMASTELLAR - Motor Principal SPA y Lógica Reactiva
  * Arquitectura: Vanilla JS ES6+ (Router, Catálogo, Butacas SVG, Confitería, Canvas QR)
  * Autor: Mileidys Agamez Ospino
- * Gobernanza: Google Cloud OKF v0.2
+ * Estandares: Clean Architecture & Modular SPA
  */
 
 (function () {

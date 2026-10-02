@@ -1,7 +1,7 @@
 """
 CINEMASTELLAR - Servidor HTTP Local para Demostracion y Pruebas
 Puerto por defecto: 3001
-Gobernanza: Google Cloud OKF v0.2
+Arquitectura: Servidor Local de Pruebas
 """
 
 import http.server
